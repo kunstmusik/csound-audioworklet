@@ -1,0 +1,18 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Csound AudioWorklet Test</title>
+  </head>
+
+  <body>
+
+  </body>
+
+  <script src='CsoundNode.js'></script>
+
+  <script>
+    window.audioWorklet.addModule('CsoundProcessor.js').then(() => {
+      console.log("Csound Processor Loaded");
+    });
+  </script>
+</html>
