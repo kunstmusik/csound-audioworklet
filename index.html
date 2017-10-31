@@ -13,7 +13,7 @@
   <script>
     window.audioWorklet.addModule('CsoundProcessor.js').then(() => {
       console.log("Csound Processor Loaded");
-      fetch('libcsound.wasm')
+      return fetch('libcsound.wasm');
     }).then(response =>
       response.arrayBuffer()
     ).then(bytes => { 
