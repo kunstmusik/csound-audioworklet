@@ -14,8 +14,9 @@ class CsoundProcessor extends AudioWorkletProcessor {
 
     };
     this.port.start();
+    
+    console.log("OPTIONS: " + options);
 
-    this.port.postMessage(options);
   }
 
   process(inputs, outputs, parameters) {
