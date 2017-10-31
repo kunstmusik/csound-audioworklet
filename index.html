@@ -18,6 +18,14 @@
       response.arrayBuffer()
     ).then(bytes => { 
       console.log("Loaded WASM bytes."); 
+
+      let context = new AudioContext();
+      let csNode = new CsoundNode(context, 
+          { wasmBytes: bytes });
+
+      csNode.connect(context.destination);
+
+
     });
 
 
