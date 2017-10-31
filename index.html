@@ -13,6 +13,26 @@
   <script>
     window.audioWorklet.addModule('CsoundProcessor.js').then(() => {
       console.log("Csound Processor Loaded");
+      fetch('libcsound.wasm')
+    }).then(response =>
+      response.arrayBuffer()
+    ).then(bytes => { 
+      console.log("Loaded WASM bytes."); 
     });
+
+
+  var importObject = { imports: { print: arg => console.log(arg) } };
+
+// load WASM
+//fetch('libcsound.wasm').then(response =>
+//  response.arrayBuffer()
+//).then(bytes =>
+//  { 
+//    console.log("Loaded WASM bytes."); 
+//
+//
+//  }
+//);
+
   </script>
 </html>
