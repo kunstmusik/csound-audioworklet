@@ -8,7 +8,32 @@
 
   </body>
 
+  <script>
+    var Module = Module || {}; 
+
+    Module['wasmBinaryFile'] = 'libcsound.wasm';
+    Module['print'] = console.log;
+    Module['printErr'] = console.log;
+Module['onRuntimeInitialized'] = () => {
+    window.audioWorklet.addModule('CsoundProcessor.js').then(() => {
+      console.log("Csound Processor Loaded");
+
+      let context = new AudioContext();
+      let csNode = new CsoundNode(context, 
+          { csoundObjClass: CsoundObj });
+
+      csNode.connect(context.destination);
+
+
+    });
+
+};
+  
+  </script>
+
   <script src='CsoundNode.js'></script>
+  <script src='libcsound.js'></script>
+  <script src='CsoundObj.js'></script>
 
   <script>
     window.audioWorklet.addModule('CsoundProcessor.js').then(() => {

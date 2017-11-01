@@ -9,12 +9,6 @@ class CsoundProcessor extends AudioWorkletProcessor {
   constructor(options) {
     super(options);
 
-
-    this.port.onmessage = evt => {
-
-    };
-    this.port.start();
-    
     console.log("OPTIONS: " + options);
 
   }
@@ -25,17 +19,4 @@ class CsoundProcessor extends AudioWorkletProcessor {
   } 
 }
 
-var importObject = { imports: { print: arg => console.log(arg) } };
-
-// Load WASM
-//fetch('libcsound.wasm').then(response =>
-//  response.arrayBuffer()
-//).then(bytes =>
-//  WebAssembly.instantiate(bytes, importObject)
-//).then(result =>
-//  //registerProcessor('Csound', CsoundProcessor)
-//    //result.instance.exports.exported_func()
-//);
-
-
-  registerProcessor('Csound', CsoundProcessor);
+registerProcessor('Csound', CsoundProcessor);
