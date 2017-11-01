@@ -35,37 +35,4 @@ Module['onRuntimeInitialized'] = () => {
   <script src='libcsound.js'></script>
   <script src='CsoundObj.js'></script>
 
-  <script>
-    window.audioWorklet.addModule('CsoundProcessor.js').then(() => {
-      console.log("Csound Processor Loaded");
-      return fetch('libcsound.wasm');
-    }).then(response =>
-      response.arrayBuffer()
-    ).then(bytes => { 
-      console.log("Loaded WASM bytes."); 
-
-      let context = new AudioContext();
-      let csNode = new CsoundNode(context, 
-          { wasmBytes: bytes });
-
-      csNode.connect(context.destination);
-
-
-    });
-
-
-  var importObject = { imports: { print: arg => console.log(arg) } };
-
-// load WASM
-//fetch('libcsound.wasm').then(response =>
-//  response.arrayBuffer()
-//).then(bytes =>
-//  { 
-//    console.log("Loaded WASM bytes."); 
-//
-//
-//  }
-//);
-
-  </script>
 </html>
