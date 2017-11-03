@@ -11,28 +11,17 @@
   <script src='CsoundNode.js'></script>
 
   <script>
-    window.audioWorklet.addModule('CsoundProcessor.js').then(() => {
-      console.log("Csound Processor Loaded");
-      return fetch('libcsound.wasm');
-    }).then(response =>
-      response.arrayBuffer()
-    ).then(bytes => { 
-      console.log("Loaded WASM bytes."); 
-      console.log("Bytes: " + bytes); 
 
-      let context = new AudioContext();
-      let csNode = new AudioWorkletNode(context, 
-          "Csound",
-          { wasmBytes: bytes });
+    window.audioWorklet.addModule('libcsound.wasm.as.js').then(() => 
+      window.audioWorklet.addModule('libcsound.js')).then(() =>
+      window.audioWorklet.addModule('CsoundProcessor.js')).then(() => {
+        let context = new AudioContext();
+        let csNode = new AudioWorkletNode(context, "Csound");
 
-      csNode.connect(context.destination);
+        csNode.connect(context.destination);
 
-
-    });
-
-
-  var importObject = { imports: { print: arg => console.log(arg) } };
-
+        console.log("TESTING");
+      });
 
   </script>
 </html>
