@@ -13,42 +13,43 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  */
 
-var CsoundObj = function() {
+AudioWorkletGlobalScope.CsoundObj = function() {
+    var WAM = AudioWorkletGlobalScope.WAM;
 
     var that = this;
-    var _new = cwrap('CsoundObj_new', ['number'], null);
-    var _compileCSD = cwrap('CsoundObj_compileCSD', null, ['number', 'string']);
-    var _evaluateCode = cwrap('CsoundObj_evaluateCode', ['number'], ['number', 'string']);
-    var _readScore = cwrap('CsoundObj_readScore', ['number'], ['number', 'string']);
-    var _reset = cwrap('CsoundObj_reset', null, ['number']);
-    var _getOutputBuffer = cwrap('CsoundObj_getOutputBuffer', ['number'], ['number']);
-    var _getInputBuffer = cwrap('CsoundObj_getInputBuffer', ['number'], ['number']);
-    var _getControlChannel = cwrap('CsoundObj_getControlChannel', ['number'], ['number', 'string']);
-    var _setControlChannel = cwrap('CsoundObj_setControlChannel', null, ['number', 'string', 'number']);
-    var _setStringChannel = cwrap('CsoundObj_setStringChannel', null, ['number', 'string', 'string']);
-    var _getKsmps = cwrap('CsoundObj_getKsmps', ['number'], ['number']);
-    var _performKsmps = cwrap('CsoundObj_performKsmps', ['number'], ['number']);
-    var _render = cwrap('CsoundObj_render', null, ['number']);
-    var _getInputChannelCount = cwrap('CsoundObj_getInputChannelCount', ['number'], ['number']);
-    var _getOutputChannelCount = cwrap('CsoundObj_getOutputChannelCount', ['number'], ['number']);
-    var _getTableLength = cwrap('CsoundObj_getTableLength', ['number'], ['number', 'number']);
-    var _getTable = cwrap('CsoundObj_getTable', ['number'], ['number', 'number']);
-    var _getZerodBFS = cwrap('CsoundObj_getZerodBFS', ['number'], ['number']);
-    var _setMidiCallbacks = cwrap('CsoundObj_setMidiCallbacks', null, ['number']);
-    var _pushMidiMessage = cwrap('CsoundObj_pushMidiMessage', null, ['number', 'number', 'number', 'number']);
-    var _setOutputChannelCallback = cwrap('CsoundObj_setOutputChannelCallback', null, ['number', 'number']);
-    var _compileOrc = cwrap('CsoundObj_compileOrc', 'number', ['number', 'string']);
-    var _setOption = cwrap('CsoundObj_setOption', null, ['number', 'string']);
-    var _prepareRT = cwrap('CsoundObj_prepareRT', null, ['number']);
-    var _getScoreTime = cwrap('CsoundObj_getScoreTime', null, ['number']);
-    var _setTable = cwrap('CsoundObj_setTable', null, ['number', 'number', 'number', 'number']);
-    var _openAudioOut = cwrap('CsoundObj_openAudioOut', null, ['number']);
-    var _closeAudioOut = cwrap('CsoundObj_closeAudioOut', null, ['number']);
-    var _play = cwrap('CsoundObj_play', null, ['number']);
-    var _paude = cwrap('CsoundObj_pause', null, ['number']);
+    var _new = WAM.cwrap('CsoundObj_new', ['number'], null);
+    var _compileCSD = WAM.cwrap('CsoundObj_compileCSD', null, ['number', 'string']);
+    var _evaluateCode = WAM.cwrap('CsoundObj_evaluateCode', ['number'], ['number', 'string']);
+    var _readScore = WAM.cwrap('CsoundObj_readScore', ['number'], ['number', 'string']);
+    var _reset = WAM.cwrap('CsoundObj_reset', null, ['number']);
+    var _getOutputBuffer = WAM.cwrap('CsoundObj_getOutputBuffer', ['number'], ['number']);
+    var _getInputBuffer = WAM.cwrap('CsoundObj_getInputBuffer', ['number'], ['number']);
+    var _getControlChannel = WAM.cwrap('CsoundObj_getControlChannel', ['number'], ['number', 'string']);
+    var _setControlChannel = WAM.cwrap('CsoundObj_setControlChannel', null, ['number', 'string', 'number']);
+    var _setStringChannel = WAM.cwrap('CsoundObj_setStringChannel', null, ['number', 'string', 'string']);
+    var _getKsmps = WAM.cwrap('CsoundObj_getKsmps', ['number'], ['number']);
+    var _performKsmps = WAM.cwrap('CsoundObj_performKsmps', ['number'], ['number']);
+    var _render = WAM.cwrap('CsoundObj_render', null, ['number']);
+    var _getInputChannelCount = WAM.cwrap('CsoundObj_getInputChannelCount', ['number'], ['number']);
+    var _getOutputChannelCount = WAM.cwrap('CsoundObj_getOutputChannelCount', ['number'], ['number']);
+    var _getTableLength = WAM.cwrap('CsoundObj_getTableLength', ['number'], ['number', 'number']);
+    var _getTable = WAM.cwrap('CsoundObj_getTable', ['number'], ['number', 'number']);
+    var _getZerodBFS = WAM.cwrap('CsoundObj_getZerodBFS', ['number'], ['number']);
+    var _setMidiCallbacks = WAM.cwrap('CsoundObj_setMidiCallbacks', null, ['number']);
+    var _pushMidiMessage = WAM.cwrap('CsoundObj_pushMidiMessage', null, ['number', 'number', 'number', 'number']);
+    var _setOutputChannelCallback = WAM.cwrap('CsoundObj_setOutputChannelCallback', null, ['number', 'number']);
+    var _compileOrc = WAM.cwrap('CsoundObj_compileOrc', 'number', ['number', 'string']);
+    var _setOption = WAM.cwrap('CsoundObj_setOption', null, ['number', 'string']);
+    var _prepareRT = WAM.cwrap('CsoundObj_prepareRT', null, ['number']);
+    var _getScoreTime = WAM.cwrap('CsoundObj_getScoreTime', null, ['number']);
+    var _setTable = WAM.cwrap('CsoundObj_setTable', null, ['number', 'number', 'number', 'number']);
+    var _openAudioOut = WAM.cwrap('CsoundObj_openAudioOut', null, ['number']);
+    var _closeAudioOut = WAM.cwrap('CsoundObj_closeAudioOut', null, ['number']);
+    var _play = WAM.cwrap('CsoundObj_play', null, ['number']);
+    var _pause = WAM.cwrap('CsoundObj_pause', null, ['number']);
     var bufferSize;
     var _self = _new();
-    var _destroy = cwrap('CsoundObj_destroy', null, ['number']);
+    var _destroy = WAM.cwrap('CsoundObj_destroy', null, ['number']);
     var running;
 
     var getAudioContext = function() {
@@ -79,28 +80,28 @@ var CsoundObj = function() {
     
     this.enableAudioInput = function(audioInputCallback) {
 
-	window.navigator = window.navigator || {};
-	navigator.getUserMedia = navigator.getUserMedia||navigator.webkitGetUserMedia ||navigator.mozGetUserMedia||null;
+	//window.navigator = window.navigator || {};
+	//navigator.getUserMedia = navigator.getUserMedia||navigator.webkitGetUserMedia ||navigator.mozGetUserMedia||null;
 
-	if (navigator.getUserMedia === null) {
+	//if (navigator.getUserMedia === null) {
 
-	    Module['print']("Audio Input not supported in this browser");
-	    audioInputCallback(false);
-	}	
-	else{
-	    function onSuccess(stream) {
+	//    Module['print']("Audio Input not supported in this browser");
+	//    audioInputCallback(false);
+	//}	
+	//else{
+	//    function onSuccess(stream) {
 
-		microphoneNode = audioContext.createMediaStreamSource(stream);	
-		audioInputCallback(true);
-	    };
-	    function onFailure(error) {
+	//  microphoneNode = audioContext.createMediaStreamSource(stream);	
+	//  audioInputCallback(true);
+	//    };
+	//    function onFailure(error) {
 
-		microphoneNode = null;	
-		audioInputCallback(false);
-		Module['print']("Could not initialise audio input, error:" +  error); 
-	    };
-	    navigator.getUserMedia({audio:true}, onSuccess, onFailure);
-	}		
+	//  microphoneNode = null;	
+	//  audioInputCallback(false);
+	//  Module['print']("Could not initialise audio input, error:" +  error); 
+	//    };
+	//    navigator.getUserMedia({audio:true}, onSuccess, onFailure);
+	//}		
 
     };
 

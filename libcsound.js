@@ -14,9 +14,7 @@
 // before the code. Then that object will be used in the code, and you
 // can continue to use Module afterwards as well.
 var Module;
-if (!Module) Module = (typeof Module !== 'undefined' ? Module : null) || {};
-
-Module['wasmBinary'] = AudioWorkletGlobalScope.libcsoundWasm();
+if (!Module) Module = (typeof AudioWorkletGlobalScope.WAM !== "undefined" ? AudioWorkletGlobalScope.WAM : null) || {};
 
 
 // Sometimes an existing Module object exists with properties
