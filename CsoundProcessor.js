@@ -1,6 +1,10 @@
 
 class CsoundProcessor extends AudioWorkletProcessor {
 
+	static get parameterDescriptors() {
+		return [];
+	}
+
   constructor(options) {
     super(options);
 
