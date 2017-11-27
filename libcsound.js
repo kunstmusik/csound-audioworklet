@@ -1704,7 +1704,8 @@ function integrateWasmJS(Module) {
     var binary;
     if (Module['wasmBinary']) {
       binary = Module['wasmBinary'];
-      binary = new Uint8Array(binary);
+      //binary = new Uint8Array(binary);
+      binary = Module.atob(binary);
     } else if (Module['readBinary']) {
       binary = Module['readBinary'](wasmBinaryFile);
     } else {

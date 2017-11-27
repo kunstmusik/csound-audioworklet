@@ -11,17 +11,14 @@
   <script src='CsoundNode.js'></script>
 
   <script>
+    CsoundNode.importScripts().then(() => {
+      let context = new AudioContext();
+      let csNode = new CsoundNode(context, "Csound");
 
-    window.audioWorklet.addModule('libcsound.wasm.as.js').then(() => 
-      window.audioWorklet.addModule('libcsound.js')).then(() =>
-      window.audioWorklet.addModule('CsoundProcessor.js')).then(() => {
-        let context = new AudioContext();
-        let csNode = new AudioWorkletNode(context, "Csound");
+      csNode.connect(context.destination);
 
-        csNode.connect(context.destination);
-
-        console.log("TESTING");
-      });
+      console.log("TESTING");
+    });
 
   </script>
 </html>
