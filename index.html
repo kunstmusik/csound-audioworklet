@@ -13,7 +13,7 @@
   <script>
     CsoundNode.importScripts().then(() => {
       let context = new AudioContext();
-      let csNode = new CsoundNode(context, "Csound");
+      let csNode = new CsoundNode(context);
 
       csNode.connect(context.destination);
 
