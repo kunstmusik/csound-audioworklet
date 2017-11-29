@@ -46,4 +46,6 @@ AudioWorkletGlobalScope.WAM.b64ToUint6 = function (nChr)
         :
         0;
 }
+
+AudioWorkletGlobalScope.WAM.wasmBinary = AudioWorkletGlobalScope.WAM.atob(AudioWorkletGlobalScope.WAM.wasmBinary);
 EOF
