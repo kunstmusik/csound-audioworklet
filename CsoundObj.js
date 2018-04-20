@@ -37,21 +37,26 @@ const CSOUND_AUDIO_CONTEXT = (function() {
 class CsoundObj {
   constructor() {
     this.audioContext = CSOUND_AUDIO_CONTEXT;
-    this.csNode = new CsoundNode(this.audioContext);
-    this.csNode.connect(this.audioContext.destination);
+
+    // exposes node as property, user may access to set port onMessage callback
+    // or we can add a setOnMessage(cb) method on CsoundObj...
+    this.node = new CsoundNode(this.audioContext);
+    this.node.connect(this.audioContext.destination);
   }
 
   compileCsd(filePath) {
     // not sure what to do about file path...
     // need to see what can be accessed in
     // worklet scope
+    this.node.port.postMessage(["compileCsd", filePath]);
   }
 
   compileOrc(orcString) {
+    this.node.port.postMessage(["compileOrc", orcString]);
   }
 
   setOption(option) {
-    
+    this.node.port.postMessage(["setOption", option]);    
   }
 
   render(filePath) {
@@ -71,6 +76,7 @@ class CsoundObj {
   }
 
   start() {
+    this.node.port.postMessage(["start"]);
   }
 
   reset() {

@@ -16,7 +16,26 @@
     CsoundNode.importScripts(CSOUND_AUDIO_CONTEXT).then(() => {
       let csoundObj = new CsoundObj();
 
-      console.log("TESTING: " + csoundObj);
+const TEST_ORC = 
+`
+sr=48000
+ksmps=64
+0dbfs=1
+nchnls_i=1
+nchnls=2
+
+instr 1 
+  asig = vco2(0.25, 440)
+  outc(asig, asig)
+endin
+
+schedule(1, 0, 10)
+`;
+      csoundObj.setOption("-odac");
+      csoundObj.compileOrc(TEST_ORC);
+      csoundObj.start();
+
+
     });
 
   </script>

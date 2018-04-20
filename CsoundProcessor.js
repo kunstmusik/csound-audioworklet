@@ -46,20 +46,6 @@ const Csound = {
 //var _closeAudioOut = WAM.cwrap('CsoundObj_closeAudioOut', null, ['number']);
 //
 
-const TEST_ORC = 
-`
-0dbfs=1
-nchnls_i=1
-nchnls=2
-
-instr 1 
-  asig = vco2(0.25, 440)
-  outc(asig, asig)
-endin
-
-schedule(1, 0, 10)
-`;
-
 
 class CsoundProcessor extends AudioWorkletProcessor {
 
@@ -70,34 +56,18 @@ class CsoundProcessor extends AudioWorkletProcessor {
   constructor(options) {
     super(options);
 
-    let ksmps = 64;
-    let outputChannelCount = 2;
-    let inputChannelCount = 1;
-
     let csObj = Csound.new();
     this.csObj = csObj;
 
-    Csound.setOption(csObj, `--sample-rate=${sampleRate}`)
-    Csound.setOption(csObj, `--ksmps=64`)
-    Csound.setOption(csObj, `--nchnls=2`)
-    Csound.setOption(csObj, `--0dbfs=1`)
-
-    Csound.prepareRT(csObj);
-    Csound.compileOrc(csObj, TEST_ORC);
-    Csound.play(csObj);
-
-
-    let outputPointer = Csound.getOutputBuffer(csObj);	
-    this.csoundOutputBuffer = new Float32Array(WAM.HEAP8.buffer, outputPointer, ksmps * outputChannelCount);
-    let inputPointer = Csound.getInputBuffer(csObj);	
-    this.csoundInputBuffer = new Float32Array(WAM.HEAP8.buffer, inputPointer, ksmps * inputChannelCount);
-    let zerodBFS = Csound.getZerodBFS(csObj);
-
+    this.port.onmessage = this.handleMessage.bind(this);
 
   }
 
 
   process(inputs, outputs, parameters) {
+    if(this.csoundOutputBuffer == null) {
+      return true;
+    } 
     let input = inputs[0];
     let output = outputs[0];
 
@@ -122,6 +92,47 @@ class CsoundProcessor extends AudioWorkletProcessor {
 
     return true;
   } 
+
+  start() {
+    let csObj = this.csObj;
+    let ksmps = Csound.getKsmps(csObj);
+    let outputChannelCount = 2;
+    let inputChannelCount = 1;
+
+
+    Csound.prepareRT(csObj);
+    Csound.play(csObj);
+
+
+    let outputPointer = Csound.getOutputBuffer(csObj);	
+    this.csoundOutputBuffer = new Float32Array(WAM.HEAP8.buffer, outputPointer, ksmps * outputChannelCount);
+    let inputPointer = Csound.getInputBuffer(csObj);	
+    this.csoundInputBuffer = new Float32Array(WAM.HEAP8.buffer, inputPointer, ksmps * inputChannelCount);
+    let zerodBFS = Csound.getZerodBFS(csObj);
+
+  }
+
+  compileOrc(orcString) {
+    Csound.compileOrc(this.csObj, orcString);
+  }
+
+  handleMessage(event) {
+    let data = event.data;
+
+    switch(data[0]) {
+      case "compileOrc":
+        Csound.compileOrc(this.csObj, data[1]);
+        break;
+      case "start":
+        this.start();
+        break;
+      case "setOption":
+        Csound.setOption(this.csObj, data[1]);
+        break;
+      default:
+        console.log('[CsoundAudioProcessor] Invalid Message: "' + event.data);
+    }
+  }
 }
 
 registerProcessor('Csound', CsoundProcessor);
