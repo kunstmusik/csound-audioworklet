@@ -3,6 +3,13 @@
 rm libcsound.base64.js
 
 echo "AudioWorkletGlobalScope.WAM = { ENVIRONMENT: \"WEB\" };" >> libcsound.base64.js
+
+#AudioWorkletGlobalScope.WAM = { 
+#  ENVIRONMENT: "WEB",
+#  print: (t) => console.log(t),
+#  printErr: (t) => console.log(t)
+#};
+
 echo "AudioWorkletGlobalScope.WAM.wasmBinary = \"$(base64 -w 0 libcsound.wasm)\";" >> libcsound.base64.js
 
 cat << EOF >> libcsound.base64.js

@@ -60,7 +60,7 @@ AudioWorkletGlobalScope.CsoundObj = function() {
 	}
 	catch(error) {
 
-	    alert('Web Audio API is not supported in this browser');
+	    console.log('Web Audio API is not supported in this browser');
 	}
     };
 
@@ -280,7 +280,7 @@ AudioWorkletGlobalScope.CsoundObj = function() {
 	    }
 	    else {
 
-		alert("Insufficient number of Csound inputs: nchnls_i, not starting");
+		console("Insufficient number of Csound inputs: nchnls_i, not starting");
 		return;
 	    }
 	}

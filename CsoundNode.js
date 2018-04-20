@@ -13,17 +13,16 @@ class CsoundNode extends AudioWorkletNode {
   }
 
 
-  static importScripts() {
+  static importScripts(actx) {
     return new Promise( (resolve) => {
-      window.audioWorklet.addModule('libcsound.base64.js')
-        .then(() => window.audioWorklet.addModule('libcsound.js'))
-        //.then(() => window.audioWorklet.addModule('CsoundObj.js'))
-        .then(() => window.audioWorklet.addModule('CsoundProcessor.js'))
-        .then(() => {
-              setTimeout( function () { resolve(); }, 500);
-            }) 
-    });      
-
+      actx.audioWorklet.addModule('libcsound.base64.js').then(() => {
+      actx.audioWorklet.addModule('libcsound.js').then(() => {
+      actx.audioWorklet.addModule('CsoundObj.js').then(() => {
+      actx.audioWorklet.addModule('CsoundProcessor.js').then(() => {
+        resolve(); 
+      }) 
+      }) }) })      
+    }) 
   }
 
 }
