@@ -14,6 +14,7 @@
  */
 
 
+// Setup a single global AudioContext object
 const CSOUND_AUDIO_CONTEXT = (function() {
 
 	try {
@@ -26,6 +27,24 @@ const CSOUND_AUDIO_CONTEXT = (function() {
 	}
   return null;
 }());
+
+
+/* CsoundNode class to use for AudioWorklet */
+class CsoundNode extends AudioWorkletNode {
+
+  constructor(context, options) {
+    options = options || {};
+    options.numberOfInputs  = 1;
+    options.numberOfOutputs = 2;
+    options.channelCount = 2;
+
+    super(context, 'Csound', options);
+
+    this.port.start();
+  }
+
+}
+
 
 
 
@@ -97,4 +116,16 @@ class CsoundObj {
   stop() {
   }
 
+
+  /** Use to asynchronously setup AudioWorklet */
+  static importScripts() {
+    let actx = CSOUND_AUDIO_CONTEXT;
+    return new Promise( (resolve) => {
+      actx.audioWorklet.addModule('libcsound.base64.js').then(() => {
+      actx.audioWorklet.addModule('libcsound.js').then(() => {
+      actx.audioWorklet.addModule('CsoundProcessor.js').then(() => {
+        resolve(); 
+      }) }) })      
+    }) 
+  }
 }
