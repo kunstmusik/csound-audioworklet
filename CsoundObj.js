@@ -82,16 +82,21 @@ class CsoundObj {
   }
 
   evaluateCode(codeString) {
+    this.node.port.postMessage(["evalCode", codeString]);
   }
 
   readScore(scoreString) {
+    this.node.port.postMessage(["readScore", scoreString]);
   }
 
   setControlChannel(channelName, value) {
+    this.node.port.postMessage(["setControlChannel",
+      channelName, value]);
   }
 
   setStringChannel(channelName, value) {
-
+    this.node.port.postMessage(["setStringChannel",
+      channelName, value]);
   }
 
   start() {
@@ -99,6 +104,7 @@ class CsoundObj {
   }
 
   reset() {
+    this.node.port.postMessage(["reset"]);
   }
 
   destroy() {

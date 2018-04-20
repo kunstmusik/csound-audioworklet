@@ -34,7 +34,9 @@ instr Run
   schedule(p1, random(2,4), 1)
 endin
 
+seed(0)
 schedule("Run", 0, 1)
+schedule("Run", 3, 1)
 
 `;
       csoundObj.setOption("-odac");

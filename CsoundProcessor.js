@@ -123,11 +123,28 @@ class CsoundProcessor extends AudioWorkletProcessor {
       case "compileOrc":
         Csound.compileOrc(this.csObj, data[1]);
         break;
+      case "evalCode":
+        Csound.evaluateCode(this.csObj, data[1]);
+        break;
+      case "readScore":
+        Csound.readScore(this.csObj, data[1]);
+        break;
+      case "setControlChannel":
+        Csound.setControlChannel(this.csObj,
+          data[1], data[2]);
+        break;
+      case "setStringChannel":
+        Csound.setStringChannel(this.csObj,
+          data[1], data[2]);
+        break;
       case "start":
         this.start();
         break;
       case "setOption":
         Csound.setOption(this.csObj, data[1]);
+        break;
+      case "reset":
+        Csound.reset(this.csObj);
         break;
       default:
         console.log('[CsoundAudioProcessor] Invalid Message: "' + event.data);
