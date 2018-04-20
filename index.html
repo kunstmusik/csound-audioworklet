@@ -9,16 +9,14 @@
   </body>
 
   <script src='CsoundNode.js'></script>
+  <script src='CsoundObj.js'></script>
 
   <script>
 
-   let context = new AudioContext();
-    CsoundNode.importScripts(context).then(() => {
-      let csNode = new CsoundNode(context);
+    CsoundNode.importScripts(CSOUND_AUDIO_CONTEXT).then(() => {
+      let csoundObj = new CsoundObj();
 
-      csNode.connect(context.destination);
-
-      console.log("TESTING");
+      console.log("TESTING: " + csoundObj);
     });
 
   </script>
