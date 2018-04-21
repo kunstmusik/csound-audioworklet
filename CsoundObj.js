@@ -133,11 +133,10 @@ if(typeof AudioWorkletNode !== 'undefined') {
 
     /** Use to asynchronously setup AudioWorklet */
     static importScripts(script_base='./') {
-      console.log("Worklet import");
       let actx = CSOUND_AUDIO_CONTEXT;
       return new Promise( (resolve) => {
-        actx.audioWorklet.addModule(script_base + 'libcsound.base64.js').then(() => {
-        actx.audioWorklet.addModule(script_base + 'libcsound.js').then(() => {
+        actx.audioWorklet.addModule(script_base + 'libcsound-worklet.base64.js').then(() => {
+        actx.audioWorklet.addModule(script_base + 'libcsound-worklet.js').then(() => {
         actx.audioWorklet.addModule(script_base + 'CsoundProcessor.js').then(() => {
           resolve(); 
         }) }) })      
@@ -519,23 +518,24 @@ if(typeof AudioWorkletNode !== 'undefined') {
   CsoundObj.importScripts = function(script_base='./') {
     return new Promise((resolve) => {
 
-      CsoundObj.loadScript(script_base + 'libcsound.base64.js', () => {
+      //CsoundObj.loadScript(script_base + 'libcsound.base64.js', () => {
       CsoundObj.loadScript(script_base + 'libcsound.js', () => {
-      
+        AudioWorkletGlobalScope.WAM = {}
         let WAM = AudioWorkletGlobalScope.WAM;
         console.log(AudioWorkletGlobalScope);
 
         WAM["ENVIRONMENT"] = "WEB";
         WAM["print"] = (t) => console.log(t);
         WAM["printErr"] = (t) => console.log(t);
+        WAM["wasmBinaryFile"] = script_base + 'libcsound.wasm';
 
-        AudioWorkletGlobalScope.libcsound(WAM);
+        AudioWorkletGlobalScope.libcsound(WAM).then(() => {
+          resolve();
+        }) 
+      }) 
+    });
 
-        resolve();
-      
-      }) });
-
-    }) 
+    //}) 
 
   }
 }

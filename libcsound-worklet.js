@@ -1392,9 +1392,9 @@ function integrateWasmJS() {
 
   var method = 'native-wasm';
 
-  var wasmTextFile = 'libcsound.wast';
-  var wasmBinaryFile = 'libcsound.wasm';
-  var asmjsCodeFile = 'libcsound.temp.asm.js';
+  var wasmTextFile = 'libcsound-worklet.wast';
+  var wasmBinaryFile = 'libcsound-worklet.wasm';
+  var asmjsCodeFile = 'libcsound-worklet.temp.asm.js';
 
   if (typeof Module['locateFile'] === 'function') {
     if (!isDataURI(wasmTextFile)) {
@@ -1530,37 +1530,18 @@ function integrateWasmJS() {
       }
     }
 
-    function receiveInstantiatedSource(output) {
-      // 'output' is a WebAssemblyInstantiatedSource object which has both the module and instance.
-      // receiveInstance() will swap in the exports (to Module.asm) so they can be called
-      receiveInstance(output['instance'], output['module']);
+    var instance;
+    try {
+      instance = new WebAssembly.Instance(new WebAssembly.Module(getBinary()), info)
+    } catch (e) {
+      Module['printErr']('failed to compile wasm module: ' + e);
+      if (e.toString().indexOf('imported Memory with incompatible size') >= 0) {
+        Module['printErr']('Memory size incompatibility issues may be due to changing TOTAL_MEMORY at runtime to something too large. Use ALLOW_MEMORY_GROWTH to allow any size memory (and also make sure not to set TOTAL_MEMORY at runtime to something smaller than it was at compile time).');
+      }
+      return false;
     }
-    function instantiateArrayBuffer(receiver) {
-      getBinaryPromise().then(function(binary) {
-        return WebAssembly.instantiate(binary, info);
-      }).then(receiver).catch(function(reason) {
-        Module['printErr']('failed to asynchronously prepare wasm: ' + reason);
-        abort(reason);
-      });
-    }
-    // Prefer streaming instantiation if available.
-    if (!Module['wasmBinary'] &&
-        typeof WebAssembly.instantiateStreaming === 'function' &&
-        !isDataURI(wasmBinaryFile) &&
-        typeof fetch === 'function') {
-      WebAssembly.instantiateStreaming(fetch(wasmBinaryFile, { credentials: 'same-origin' }), info)
-        .then(receiveInstantiatedSource)
-        .catch(function(reason) {
-          // We expect the most common failure cause to be a bad MIME type for the binary,
-          // in which case falling back to ArrayBuffer instantiation should work.
-          Module['printErr']('wasm streaming compile failed: ' + reason);
-          Module['printErr']('falling back to ArrayBuffer instantiation');
-          instantiateArrayBuffer(receiveInstantiatedSource);
-        });
-    } else {
-      instantiateArrayBuffer(receiveInstantiatedSource);
-    }
-    return {}; // no exports yet; we'll fill them in later
+    receiveInstance(instance);
+    return exports;
   }
 
 
@@ -9107,107 +9088,106 @@ Module.asmLibraryArg = { "abort": abort, "assert": assert, "enlargeMemory": enla
 var asm =Module["asm"]// EMSCRIPTEN_END_ASM
 (Module.asmGlobalArg, Module.asmLibraryArg, buffer);
 
-Module["asm"] = asm;
-var _CsoundObj_closeAudioOut = Module["_CsoundObj_closeAudioOut"] = function() {  return Module["asm"]["_CsoundObj_closeAudioOut"].apply(null, arguments) };
-var _CsoundObj_compileCSD = Module["_CsoundObj_compileCSD"] = function() {  return Module["asm"]["_CsoundObj_compileCSD"].apply(null, arguments) };
-var _CsoundObj_compileOrc = Module["_CsoundObj_compileOrc"] = function() {  return Module["asm"]["_CsoundObj_compileOrc"].apply(null, arguments) };
-var _CsoundObj_destroy = Module["_CsoundObj_destroy"] = function() {  return Module["asm"]["_CsoundObj_destroy"].apply(null, arguments) };
-var _CsoundObj_evaluateCode = Module["_CsoundObj_evaluateCode"] = function() {  return Module["asm"]["_CsoundObj_evaluateCode"].apply(null, arguments) };
-var _CsoundObj_getControlChannel = Module["_CsoundObj_getControlChannel"] = function() {  return Module["asm"]["_CsoundObj_getControlChannel"].apply(null, arguments) };
-var _CsoundObj_getInputBuffer = Module["_CsoundObj_getInputBuffer"] = function() {  return Module["asm"]["_CsoundObj_getInputBuffer"].apply(null, arguments) };
-var _CsoundObj_getInputChannelCount = Module["_CsoundObj_getInputChannelCount"] = function() {  return Module["asm"]["_CsoundObj_getInputChannelCount"].apply(null, arguments) };
-var _CsoundObj_getKsmps = Module["_CsoundObj_getKsmps"] = function() {  return Module["asm"]["_CsoundObj_getKsmps"].apply(null, arguments) };
-var _CsoundObj_getOutputBuffer = Module["_CsoundObj_getOutputBuffer"] = function() {  return Module["asm"]["_CsoundObj_getOutputBuffer"].apply(null, arguments) };
-var _CsoundObj_getOutputChannelCount = Module["_CsoundObj_getOutputChannelCount"] = function() {  return Module["asm"]["_CsoundObj_getOutputChannelCount"].apply(null, arguments) };
-var _CsoundObj_getScoreTime = Module["_CsoundObj_getScoreTime"] = function() {  return Module["asm"]["_CsoundObj_getScoreTime"].apply(null, arguments) };
-var _CsoundObj_getTable = Module["_CsoundObj_getTable"] = function() {  return Module["asm"]["_CsoundObj_getTable"].apply(null, arguments) };
-var _CsoundObj_getTableLength = Module["_CsoundObj_getTableLength"] = function() {  return Module["asm"]["_CsoundObj_getTableLength"].apply(null, arguments) };
-var _CsoundObj_getZerodBFS = Module["_CsoundObj_getZerodBFS"] = function() {  return Module["asm"]["_CsoundObj_getZerodBFS"].apply(null, arguments) };
-var _CsoundObj_inputMessage = Module["_CsoundObj_inputMessage"] = function() {  return Module["asm"]["_CsoundObj_inputMessage"].apply(null, arguments) };
-var _CsoundObj_midiInClose = Module["_CsoundObj_midiInClose"] = function() {  return Module["asm"]["_CsoundObj_midiInClose"].apply(null, arguments) };
-var _CsoundObj_midiInOpen = Module["_CsoundObj_midiInOpen"] = function() {  return Module["asm"]["_CsoundObj_midiInOpen"].apply(null, arguments) };
-var _CsoundObj_new = Module["_CsoundObj_new"] = function() {  return Module["asm"]["_CsoundObj_new"].apply(null, arguments) };
-var _CsoundObj_openAudioOut = Module["_CsoundObj_openAudioOut"] = function() {  return Module["asm"]["_CsoundObj_openAudioOut"].apply(null, arguments) };
-var _CsoundObj_pause = Module["_CsoundObj_pause"] = function() {  return Module["asm"]["_CsoundObj_pause"].apply(null, arguments) };
-var _CsoundObj_performKsmps = Module["_CsoundObj_performKsmps"] = function() {  return Module["asm"]["_CsoundObj_performKsmps"].apply(null, arguments) };
-var _CsoundObj_play = Module["_CsoundObj_play"] = function() {  return Module["asm"]["_CsoundObj_play"].apply(null, arguments) };
-var _CsoundObj_prepareRT = Module["_CsoundObj_prepareRT"] = function() {  return Module["asm"]["_CsoundObj_prepareRT"].apply(null, arguments) };
-var _CsoundObj_pushMidiMessage = Module["_CsoundObj_pushMidiMessage"] = function() {  return Module["asm"]["_CsoundObj_pushMidiMessage"].apply(null, arguments) };
-var _CsoundObj_readScore = Module["_CsoundObj_readScore"] = function() {  return Module["asm"]["_CsoundObj_readScore"].apply(null, arguments) };
-var _CsoundObj_render = Module["_CsoundObj_render"] = function() {  return Module["asm"]["_CsoundObj_render"].apply(null, arguments) };
-var _CsoundObj_reset = Module["_CsoundObj_reset"] = function() {  return Module["asm"]["_CsoundObj_reset"].apply(null, arguments) };
-var _CsoundObj_setControlChannel = Module["_CsoundObj_setControlChannel"] = function() {  return Module["asm"]["_CsoundObj_setControlChannel"].apply(null, arguments) };
-var _CsoundObj_setMidiCallbacks = Module["_CsoundObj_setMidiCallbacks"] = function() {  return Module["asm"]["_CsoundObj_setMidiCallbacks"].apply(null, arguments) };
-var _CsoundObj_setOption = Module["_CsoundObj_setOption"] = function() {  return Module["asm"]["_CsoundObj_setOption"].apply(null, arguments) };
-var _CsoundObj_setOutputChannelCallback = Module["_CsoundObj_setOutputChannelCallback"] = function() {  return Module["asm"]["_CsoundObj_setOutputChannelCallback"].apply(null, arguments) };
-var _CsoundObj_setStringChannel = Module["_CsoundObj_setStringChannel"] = function() {  return Module["asm"]["_CsoundObj_setStringChannel"].apply(null, arguments) };
-var _CsoundObj_setTable = Module["_CsoundObj_setTable"] = function() {  return Module["asm"]["_CsoundObj_setTable"].apply(null, arguments) };
-var _FileList_getFileCount = Module["_FileList_getFileCount"] = function() {  return Module["asm"]["_FileList_getFileCount"].apply(null, arguments) };
-var _FileList_getFileNameString = Module["_FileList_getFileNameString"] = function() {  return Module["asm"]["_FileList_getFileNameString"].apply(null, arguments) };
-var ___errno_location = Module["___errno_location"] = function() {  return Module["asm"]["___errno_location"].apply(null, arguments) };
-var _emscripten_replace_memory = Module["_emscripten_replace_memory"] = function() {  return Module["asm"]["_emscripten_replace_memory"].apply(null, arguments) };
-var _fflush = Module["_fflush"] = function() {  return Module["asm"]["_fflush"].apply(null, arguments) };
-var _free = Module["_free"] = function() {  return Module["asm"]["_free"].apply(null, arguments) };
-var _htonl = Module["_htonl"] = function() {  return Module["asm"]["_htonl"].apply(null, arguments) };
-var _htons = Module["_htons"] = function() {  return Module["asm"]["_htons"].apply(null, arguments) };
-var _llvm_bswap_i16 = Module["_llvm_bswap_i16"] = function() {  return Module["asm"]["_llvm_bswap_i16"].apply(null, arguments) };
-var _llvm_bswap_i32 = Module["_llvm_bswap_i32"] = function() {  return Module["asm"]["_llvm_bswap_i32"].apply(null, arguments) };
-var _llvm_round_f32 = Module["_llvm_round_f32"] = function() {  return Module["asm"]["_llvm_round_f32"].apply(null, arguments) };
-var _malloc = Module["_malloc"] = function() {  return Module["asm"]["_malloc"].apply(null, arguments) };
-var _memcpy = Module["_memcpy"] = function() {  return Module["asm"]["_memcpy"].apply(null, arguments) };
-var _memmove = Module["_memmove"] = function() {  return Module["asm"]["_memmove"].apply(null, arguments) };
-var _memset = Module["_memset"] = function() {  return Module["asm"]["_memset"].apply(null, arguments) };
-var _ntohs = Module["_ntohs"] = function() {  return Module["asm"]["_ntohs"].apply(null, arguments) };
-var _realloc = Module["_realloc"] = function() {  return Module["asm"]["_realloc"].apply(null, arguments) };
-var _rintf = Module["_rintf"] = function() {  return Module["asm"]["_rintf"].apply(null, arguments) };
-var _round = Module["_round"] = function() {  return Module["asm"]["_round"].apply(null, arguments) };
-var _roundf = Module["_roundf"] = function() {  return Module["asm"]["_roundf"].apply(null, arguments) };
-var _saveSetjmp = Module["_saveSetjmp"] = function() {  return Module["asm"]["_saveSetjmp"].apply(null, arguments) };
-var _sbrk = Module["_sbrk"] = function() {  return Module["asm"]["_sbrk"].apply(null, arguments) };
-var _testSetjmp = Module["_testSetjmp"] = function() {  return Module["asm"]["_testSetjmp"].apply(null, arguments) };
-var establishStackSpace = Module["establishStackSpace"] = function() {  return Module["asm"]["establishStackSpace"].apply(null, arguments) };
-var getTempRet0 = Module["getTempRet0"] = function() {  return Module["asm"]["getTempRet0"].apply(null, arguments) };
-var runPostSets = Module["runPostSets"] = function() {  return Module["asm"]["runPostSets"].apply(null, arguments) };
-var setTempRet0 = Module["setTempRet0"] = function() {  return Module["asm"]["setTempRet0"].apply(null, arguments) };
-var setThrew = Module["setThrew"] = function() {  return Module["asm"]["setThrew"].apply(null, arguments) };
-var stackAlloc = Module["stackAlloc"] = function() {  return Module["asm"]["stackAlloc"].apply(null, arguments) };
-var stackRestore = Module["stackRestore"] = function() {  return Module["asm"]["stackRestore"].apply(null, arguments) };
-var stackSave = Module["stackSave"] = function() {  return Module["asm"]["stackSave"].apply(null, arguments) };
-var dynCall_di = Module["dynCall_di"] = function() {  return Module["asm"]["dynCall_di"].apply(null, arguments) };
-var dynCall_dii = Module["dynCall_dii"] = function() {  return Module["asm"]["dynCall_dii"].apply(null, arguments) };
-var dynCall_ffi = Module["dynCall_ffi"] = function() {  return Module["asm"]["dynCall_ffi"].apply(null, arguments) };
-var dynCall_fi = Module["dynCall_fi"] = function() {  return Module["asm"]["dynCall_fi"].apply(null, arguments) };
-var dynCall_fif = Module["dynCall_fif"] = function() {  return Module["asm"]["dynCall_fif"].apply(null, arguments) };
-var dynCall_fii = Module["dynCall_fii"] = function() {  return Module["asm"]["dynCall_fii"].apply(null, arguments) };
-var dynCall_fiii = Module["dynCall_fiii"] = function() {  return Module["asm"]["dynCall_fiii"].apply(null, arguments) };
-var dynCall_i = Module["dynCall_i"] = function() {  return Module["asm"]["dynCall_i"].apply(null, arguments) };
-var dynCall_if = Module["dynCall_if"] = function() {  return Module["asm"]["dynCall_if"].apply(null, arguments) };
-var dynCall_ii = Module["dynCall_ii"] = function() {  return Module["asm"]["dynCall_ii"].apply(null, arguments) };
-var dynCall_iif = Module["dynCall_iif"] = function() {  return Module["asm"]["dynCall_iif"].apply(null, arguments) };
-var dynCall_iii = Module["dynCall_iii"] = function() {  return Module["asm"]["dynCall_iii"].apply(null, arguments) };
-var dynCall_iiid = Module["dynCall_iiid"] = function() {  return Module["asm"]["dynCall_iiid"].apply(null, arguments) };
-var dynCall_iiii = Module["dynCall_iiii"] = function() {  return Module["asm"]["dynCall_iiii"].apply(null, arguments) };
-var dynCall_iiiii = Module["dynCall_iiiii"] = function() {  return Module["asm"]["dynCall_iiiii"].apply(null, arguments) };
-var dynCall_iiiiii = Module["dynCall_iiiiii"] = function() {  return Module["asm"]["dynCall_iiiiii"].apply(null, arguments) };
-var dynCall_iiiiiii = Module["dynCall_iiiiiii"] = function() {  return Module["asm"]["dynCall_iiiiiii"].apply(null, arguments) };
-var dynCall_iiiiiiii = Module["dynCall_iiiiiiii"] = function() {  return Module["asm"]["dynCall_iiiiiiii"].apply(null, arguments) };
-var dynCall_iiiiiiiii = Module["dynCall_iiiiiiiii"] = function() {  return Module["asm"]["dynCall_iiiiiiiii"].apply(null, arguments) };
-var dynCall_iiiiiiiiii = Module["dynCall_iiiiiiiiii"] = function() {  return Module["asm"]["dynCall_iiiiiiiiii"].apply(null, arguments) };
-var dynCall_iiiiiiiiiifii = Module["dynCall_iiiiiiiiiifii"] = function() {  return Module["asm"]["dynCall_iiiiiiiiiifii"].apply(null, arguments) };
-var dynCall_iiiiiiiiiii = Module["dynCall_iiiiiiiiiii"] = function() {  return Module["asm"]["dynCall_iiiiiiiiiii"].apply(null, arguments) };
-var dynCall_iiij = Module["dynCall_iiij"] = function() {  return Module["asm"]["dynCall_iiij"].apply(null, arguments) };
-var dynCall_ji = Module["dynCall_ji"] = function() {  return Module["asm"]["dynCall_ji"].apply(null, arguments) };
-var dynCall_v = Module["dynCall_v"] = function() {  return Module["asm"]["dynCall_v"].apply(null, arguments) };
-var dynCall_vi = Module["dynCall_vi"] = function() {  return Module["asm"]["dynCall_vi"].apply(null, arguments) };
-var dynCall_vif = Module["dynCall_vif"] = function() {  return Module["asm"]["dynCall_vif"].apply(null, arguments) };
-var dynCall_vii = Module["dynCall_vii"] = function() {  return Module["asm"]["dynCall_vii"].apply(null, arguments) };
-var dynCall_viii = Module["dynCall_viii"] = function() {  return Module["asm"]["dynCall_viii"].apply(null, arguments) };
-var dynCall_viiid = Module["dynCall_viiid"] = function() {  return Module["asm"]["dynCall_viiid"].apply(null, arguments) };
-var dynCall_viiif = Module["dynCall_viiif"] = function() {  return Module["asm"]["dynCall_viiif"].apply(null, arguments) };
-var dynCall_viiii = Module["dynCall_viiii"] = function() {  return Module["asm"]["dynCall_viiii"].apply(null, arguments) };
-var dynCall_viiiii = Module["dynCall_viiiii"] = function() {  return Module["asm"]["dynCall_viiiii"].apply(null, arguments) };
-var dynCall_viiiiif = Module["dynCall_viiiiif"] = function() {  return Module["asm"]["dynCall_viiiiif"].apply(null, arguments) };
-var dynCall_viiiiiii = Module["dynCall_viiiiiii"] = function() {  return Module["asm"]["dynCall_viiiiiii"].apply(null, arguments) };
+var _CsoundObj_closeAudioOut = Module["_CsoundObj_closeAudioOut"] = asm["_CsoundObj_closeAudioOut"];
+var _CsoundObj_compileCSD = Module["_CsoundObj_compileCSD"] = asm["_CsoundObj_compileCSD"];
+var _CsoundObj_compileOrc = Module["_CsoundObj_compileOrc"] = asm["_CsoundObj_compileOrc"];
+var _CsoundObj_destroy = Module["_CsoundObj_destroy"] = asm["_CsoundObj_destroy"];
+var _CsoundObj_evaluateCode = Module["_CsoundObj_evaluateCode"] = asm["_CsoundObj_evaluateCode"];
+var _CsoundObj_getControlChannel = Module["_CsoundObj_getControlChannel"] = asm["_CsoundObj_getControlChannel"];
+var _CsoundObj_getInputBuffer = Module["_CsoundObj_getInputBuffer"] = asm["_CsoundObj_getInputBuffer"];
+var _CsoundObj_getInputChannelCount = Module["_CsoundObj_getInputChannelCount"] = asm["_CsoundObj_getInputChannelCount"];
+var _CsoundObj_getKsmps = Module["_CsoundObj_getKsmps"] = asm["_CsoundObj_getKsmps"];
+var _CsoundObj_getOutputBuffer = Module["_CsoundObj_getOutputBuffer"] = asm["_CsoundObj_getOutputBuffer"];
+var _CsoundObj_getOutputChannelCount = Module["_CsoundObj_getOutputChannelCount"] = asm["_CsoundObj_getOutputChannelCount"];
+var _CsoundObj_getScoreTime = Module["_CsoundObj_getScoreTime"] = asm["_CsoundObj_getScoreTime"];
+var _CsoundObj_getTable = Module["_CsoundObj_getTable"] = asm["_CsoundObj_getTable"];
+var _CsoundObj_getTableLength = Module["_CsoundObj_getTableLength"] = asm["_CsoundObj_getTableLength"];
+var _CsoundObj_getZerodBFS = Module["_CsoundObj_getZerodBFS"] = asm["_CsoundObj_getZerodBFS"];
+var _CsoundObj_inputMessage = Module["_CsoundObj_inputMessage"] = asm["_CsoundObj_inputMessage"];
+var _CsoundObj_midiInClose = Module["_CsoundObj_midiInClose"] = asm["_CsoundObj_midiInClose"];
+var _CsoundObj_midiInOpen = Module["_CsoundObj_midiInOpen"] = asm["_CsoundObj_midiInOpen"];
+var _CsoundObj_new = Module["_CsoundObj_new"] = asm["_CsoundObj_new"];
+var _CsoundObj_openAudioOut = Module["_CsoundObj_openAudioOut"] = asm["_CsoundObj_openAudioOut"];
+var _CsoundObj_pause = Module["_CsoundObj_pause"] = asm["_CsoundObj_pause"];
+var _CsoundObj_performKsmps = Module["_CsoundObj_performKsmps"] = asm["_CsoundObj_performKsmps"];
+var _CsoundObj_play = Module["_CsoundObj_play"] = asm["_CsoundObj_play"];
+var _CsoundObj_prepareRT = Module["_CsoundObj_prepareRT"] = asm["_CsoundObj_prepareRT"];
+var _CsoundObj_pushMidiMessage = Module["_CsoundObj_pushMidiMessage"] = asm["_CsoundObj_pushMidiMessage"];
+var _CsoundObj_readScore = Module["_CsoundObj_readScore"] = asm["_CsoundObj_readScore"];
+var _CsoundObj_render = Module["_CsoundObj_render"] = asm["_CsoundObj_render"];
+var _CsoundObj_reset = Module["_CsoundObj_reset"] = asm["_CsoundObj_reset"];
+var _CsoundObj_setControlChannel = Module["_CsoundObj_setControlChannel"] = asm["_CsoundObj_setControlChannel"];
+var _CsoundObj_setMidiCallbacks = Module["_CsoundObj_setMidiCallbacks"] = asm["_CsoundObj_setMidiCallbacks"];
+var _CsoundObj_setOption = Module["_CsoundObj_setOption"] = asm["_CsoundObj_setOption"];
+var _CsoundObj_setOutputChannelCallback = Module["_CsoundObj_setOutputChannelCallback"] = asm["_CsoundObj_setOutputChannelCallback"];
+var _CsoundObj_setStringChannel = Module["_CsoundObj_setStringChannel"] = asm["_CsoundObj_setStringChannel"];
+var _CsoundObj_setTable = Module["_CsoundObj_setTable"] = asm["_CsoundObj_setTable"];
+var _FileList_getFileCount = Module["_FileList_getFileCount"] = asm["_FileList_getFileCount"];
+var _FileList_getFileNameString = Module["_FileList_getFileNameString"] = asm["_FileList_getFileNameString"];
+var ___errno_location = Module["___errno_location"] = asm["___errno_location"];
+var _emscripten_replace_memory = Module["_emscripten_replace_memory"] = asm["_emscripten_replace_memory"];
+var _fflush = Module["_fflush"] = asm["_fflush"];
+var _free = Module["_free"] = asm["_free"];
+var _htonl = Module["_htonl"] = asm["_htonl"];
+var _htons = Module["_htons"] = asm["_htons"];
+var _llvm_bswap_i16 = Module["_llvm_bswap_i16"] = asm["_llvm_bswap_i16"];
+var _llvm_bswap_i32 = Module["_llvm_bswap_i32"] = asm["_llvm_bswap_i32"];
+var _llvm_round_f32 = Module["_llvm_round_f32"] = asm["_llvm_round_f32"];
+var _malloc = Module["_malloc"] = asm["_malloc"];
+var _memcpy = Module["_memcpy"] = asm["_memcpy"];
+var _memmove = Module["_memmove"] = asm["_memmove"];
+var _memset = Module["_memset"] = asm["_memset"];
+var _ntohs = Module["_ntohs"] = asm["_ntohs"];
+var _realloc = Module["_realloc"] = asm["_realloc"];
+var _rintf = Module["_rintf"] = asm["_rintf"];
+var _round = Module["_round"] = asm["_round"];
+var _roundf = Module["_roundf"] = asm["_roundf"];
+var _saveSetjmp = Module["_saveSetjmp"] = asm["_saveSetjmp"];
+var _sbrk = Module["_sbrk"] = asm["_sbrk"];
+var _testSetjmp = Module["_testSetjmp"] = asm["_testSetjmp"];
+var establishStackSpace = Module["establishStackSpace"] = asm["establishStackSpace"];
+var getTempRet0 = Module["getTempRet0"] = asm["getTempRet0"];
+var runPostSets = Module["runPostSets"] = asm["runPostSets"];
+var setTempRet0 = Module["setTempRet0"] = asm["setTempRet0"];
+var setThrew = Module["setThrew"] = asm["setThrew"];
+var stackAlloc = Module["stackAlloc"] = asm["stackAlloc"];
+var stackRestore = Module["stackRestore"] = asm["stackRestore"];
+var stackSave = Module["stackSave"] = asm["stackSave"];
+var dynCall_di = Module["dynCall_di"] = asm["dynCall_di"];
+var dynCall_dii = Module["dynCall_dii"] = asm["dynCall_dii"];
+var dynCall_ffi = Module["dynCall_ffi"] = asm["dynCall_ffi"];
+var dynCall_fi = Module["dynCall_fi"] = asm["dynCall_fi"];
+var dynCall_fif = Module["dynCall_fif"] = asm["dynCall_fif"];
+var dynCall_fii = Module["dynCall_fii"] = asm["dynCall_fii"];
+var dynCall_fiii = Module["dynCall_fiii"] = asm["dynCall_fiii"];
+var dynCall_i = Module["dynCall_i"] = asm["dynCall_i"];
+var dynCall_if = Module["dynCall_if"] = asm["dynCall_if"];
+var dynCall_ii = Module["dynCall_ii"] = asm["dynCall_ii"];
+var dynCall_iif = Module["dynCall_iif"] = asm["dynCall_iif"];
+var dynCall_iii = Module["dynCall_iii"] = asm["dynCall_iii"];
+var dynCall_iiid = Module["dynCall_iiid"] = asm["dynCall_iiid"];
+var dynCall_iiii = Module["dynCall_iiii"] = asm["dynCall_iiii"];
+var dynCall_iiiii = Module["dynCall_iiiii"] = asm["dynCall_iiiii"];
+var dynCall_iiiiii = Module["dynCall_iiiiii"] = asm["dynCall_iiiiii"];
+var dynCall_iiiiiii = Module["dynCall_iiiiiii"] = asm["dynCall_iiiiiii"];
+var dynCall_iiiiiiii = Module["dynCall_iiiiiiii"] = asm["dynCall_iiiiiiii"];
+var dynCall_iiiiiiiii = Module["dynCall_iiiiiiiii"] = asm["dynCall_iiiiiiiii"];
+var dynCall_iiiiiiiiii = Module["dynCall_iiiiiiiiii"] = asm["dynCall_iiiiiiiiii"];
+var dynCall_iiiiiiiiiifii = Module["dynCall_iiiiiiiiiifii"] = asm["dynCall_iiiiiiiiiifii"];
+var dynCall_iiiiiiiiiii = Module["dynCall_iiiiiiiiiii"] = asm["dynCall_iiiiiiiiiii"];
+var dynCall_iiij = Module["dynCall_iiij"] = asm["dynCall_iiij"];
+var dynCall_ji = Module["dynCall_ji"] = asm["dynCall_ji"];
+var dynCall_v = Module["dynCall_v"] = asm["dynCall_v"];
+var dynCall_vi = Module["dynCall_vi"] = asm["dynCall_vi"];
+var dynCall_vif = Module["dynCall_vif"] = asm["dynCall_vif"];
+var dynCall_vii = Module["dynCall_vii"] = asm["dynCall_vii"];
+var dynCall_viii = Module["dynCall_viii"] = asm["dynCall_viii"];
+var dynCall_viiid = Module["dynCall_viiid"] = asm["dynCall_viiid"];
+var dynCall_viiif = Module["dynCall_viiif"] = asm["dynCall_viiif"];
+var dynCall_viiii = Module["dynCall_viiii"] = asm["dynCall_viiii"];
+var dynCall_viiiii = Module["dynCall_viiiii"] = asm["dynCall_viiiii"];
+var dynCall_viiiiif = Module["dynCall_viiiiif"] = asm["dynCall_viiiiif"];
+var dynCall_viiiiiii = Module["dynCall_viiiiiii"] = asm["dynCall_viiiiiii"];
 ;
 
 
