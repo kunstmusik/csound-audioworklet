@@ -13,14 +13,12 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  */
 
-var WAM = AudioWorkletGlobalScope.WAM;
-var Module = WAM;
 
-WAM.FileList = function(path) {
+var FileList = function(path) {
 
 	var that = this;
-	var _getFileCount = WAM.cwrap('FileList_getFileCount', ['number'], ['string']);
-	var _getFileNameString = WAM.cwrap('FileList_getFileNameString', ['string'], ['string', 'number']);
+	var _getFileCount = cwrap('FileList_getFileCount', ['number'], ['string']);
+	var _getFileNameString = cwrap('FileList_getFileNameString', ['string'], ['string', 'number']);
 
 	this.getFileList = function() {
 

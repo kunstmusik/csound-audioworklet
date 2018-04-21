@@ -1,4 +1,4 @@
-AudioWorkletGlobalScope.libcsound = function(libcsound) {
+var libcsound = function(libcsound) {
   libcsound = libcsound || {};
 
 // The Module object: Our interface to the outside world. We import
@@ -9444,3 +9444,4 @@ else if (typeof define === 'function' && define['amd'])
   define([], function() { return libcsound; });
 else if (typeof exports === 'object')
   exports["libcsound"] = libcsound;
+AudioWorkletGlobalScope.libcsound = libcsound

@@ -23,7 +23,7 @@ ksmps=64
 0dbfs=1
 nchnls_i=1
 nchnls=2
-
+      
 instr 1 
   asig = vco2(0.25, p4)
   asig = zdf_ladder(asig, expseg(8000, p3, 200), 5)
@@ -40,7 +40,8 @@ schedule("Run", 0, 1)
 schedule("Run", 3, 1)
 
 `;
-      csoundObj.setOption("-odac");
+
+      csoundObj.setOption("-m0");
       csoundObj.compileOrc(TEST_ORC);
       csoundObj.start();
 
