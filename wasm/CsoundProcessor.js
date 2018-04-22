@@ -14,9 +14,9 @@ AudioWorkletGlobalScope.libcsound(WAM);
 const Csound = {
 
   new: WAM.cwrap('CsoundObj_new', ['number'], null),
-  compileCSD:  WAM.cwrap('CsoundObj_compileCSD', null, ['number', 'string']),
+  compileCSD: WAM.cwrap('CsoundObj_compileCSD', null, ['number', 'string']),
   evaluateCode: WAM.cwrap('CsoundObj_evaluateCode', ['number'], ['number', 'string']),
-  readScore:  WAM.cwrap('CsoundObj_readScore', ['number'], ['number', 'string']),
+  readScore: WAM.cwrap('CsoundObj_readScore', ['number'], ['number', 'string']),
 
   reset: WAM.cwrap('CsoundObj_reset', null, ['number']),
   getOutputBuffer: WAM.cwrap('CsoundObj_getOutputBuffer', ['number'], ['number']),
@@ -26,15 +26,15 @@ const Csound = {
   setStringChannel: WAM.cwrap('CsoundObj_setStringChannel', null, ['number', 'string', 'string']),
   getKsmps: WAM.cwrap('CsoundObj_getKsmps', ['number'], ['number']),
   performKsmps: WAM.cwrap('CsoundObj_performKsmps', ['number'], ['number']),
-  
-  render:  WAM.cwrap('CsoundObj_render', null, ['number']),
+
+  render: WAM.cwrap('CsoundObj_render', null, ['number']),
   getInputChannelCount: WAM.cwrap('CsoundObj_getInputChannelCount', ['number'], ['number']),
   getOutputChannelCount: WAM.cwrap('CsoundObj_getOutputChannelCount', ['number'], ['number']),
-  getTableLength:  WAM.cwrap('CsoundObj_getTableLength', ['number'], ['number', 'number']),
+  getTableLength: WAM.cwrap('CsoundObj_getTableLength', ['number'], ['number', 'number']),
   getTable: WAM.cwrap('CsoundObj_getTable', ['number'], ['number', 'number']),
   getZerodBFS: WAM.cwrap('CsoundObj_getZerodBFS', ['number'], ['number']),
   compileOrc: WAM.cwrap('CsoundObj_compileOrc', 'number', ['number', 'string']),
-  setOption:  WAM.cwrap('CsoundObj_setOption', null, ['number', 'string']),
+  setOption: WAM.cwrap('CsoundObj_setOption', null, ['number', 'string']),
   prepareRT: WAM.cwrap('CsoundObj_prepareRT', null, ['number']),
   getScoreTime: WAM.cwrap('CsoundObj_getScoreTime', null, ['number']),
   setTable: WAM.cwrap('CsoundObj_setTable', null, ['number', 'number', 'number', 'number']),
@@ -49,9 +49,9 @@ const Csound = {
 
 class CsoundProcessor extends AudioWorkletProcessor {
 
-	static get parameterDescriptors() {
-		return [];
-	}
+  static get parameterDescriptors() {
+    return [];
+  }
 
   constructor(options) {
     super(options);
@@ -60,23 +60,24 @@ class CsoundProcessor extends AudioWorkletProcessor {
     this.csObj = csObj;
 
     this.port.onmessage = this.handleMessage.bind(this);
-
   }
 
 
   process(inputs, outputs, parameters) {
-    if(this.csoundOutputBuffer == null) {
+    if (this.csoundOutputBuffer == null) {
       return true;
-    } 
+    }
+
     let input = inputs[0];
     let output = outputs[0];
 
     let bufferLen = output[0].length;
 
     let csOut = this.csoundOutputBuffer;
-    let ksmps = 64;
+    let ksmps = this.ksmps;
+    let zerodBFS = this.zerodBFS;
 
-    for(let i = 0; i < bufferLen / ksmps; i++) {
+    for (let i = 0; i < bufferLen / ksmps; i++) {
       Csound.performKsmps(this.csObj);
 
       for (let channel = 0; channel < output.length; channel++) {
@@ -84,18 +85,19 @@ class CsoundProcessor extends AudioWorkletProcessor {
         let outputChannel = output[channel];
 
         for (let j = 0; j < ksmps; j++) {
-          outputChannel[i * ksmps + j] = csOut[j * 2 + channel];
+          outputChannel[i * ksmps + j] = csOut[j * 2 + channel] / zerodBFS;
         }
       }
 
     }
 
     return true;
-  } 
+  }
 
   start() {
     let csObj = this.csObj;
     let ksmps = Csound.getKsmps(csObj);
+    this.ksmps = ksmps;
     let outputChannelCount = 2;
     let inputChannelCount = 1;
 
@@ -104,11 +106,11 @@ class CsoundProcessor extends AudioWorkletProcessor {
     Csound.play(csObj);
 
 
-    let outputPointer = Csound.getOutputBuffer(csObj);	
+    let outputPointer = Csound.getOutputBuffer(csObj);
     this.csoundOutputBuffer = new Float32Array(WAM.HEAP8.buffer, outputPointer, ksmps * outputChannelCount);
-    let inputPointer = Csound.getInputBuffer(csObj);	
+    let inputPointer = Csound.getInputBuffer(csObj);
     this.csoundInputBuffer = new Float32Array(WAM.HEAP8.buffer, inputPointer, ksmps * inputChannelCount);
-    let zerodBFS = Csound.getZerodBFS(csObj);
+    this.zerodBFS = Csound.getZerodBFS(csObj);
 
   }
 
@@ -119,7 +121,7 @@ class CsoundProcessor extends AudioWorkletProcessor {
   handleMessage(event) {
     let data = event.data;
 
-    switch(data[0]) {
+    switch (data[0]) {
       case "compileOrc":
         Csound.compileOrc(this.csObj, data[1]);
         break;
@@ -145,6 +147,9 @@ class CsoundProcessor extends AudioWorkletProcessor {
         break;
       case "reset":
         Csound.reset(this.csObj);
+        this.csoundOutputBuffer = null; 
+        this.ksmps = null; 
+        this.zerodBFS = null; 
         break;
       default:
         console.log('[CsoundAudioProcessor] Invalid Message: "' + event.data);
