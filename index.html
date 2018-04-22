@@ -8,11 +8,11 @@
 
   </body>
 
-  <script src='CsoundObj.js'></script>
+  <script src='wasm/CsoundObj.js'></script>
 
   <script>
 
-    CsoundObj.importScripts().then(() => {
+    CsoundObj.importScripts("./wasm/").then(() => {
       console.log("greetings");
       let csoundObj = new CsoundObj();
 
