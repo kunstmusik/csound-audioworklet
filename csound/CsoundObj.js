@@ -31,6 +31,7 @@ const CSOUND_AUDIO_CONTEXT = (function() {
 
 var CsoundObj;
 var AudioWorkletGlobalScope = AudioWorkletGlobalScope || {};
+var CSOUND_WASM_MODULE; 
 
 /******************************************/
 /* AUDIO WORKLET CSOUNDOBJ IMPLEMENTATION */ 
@@ -68,7 +69,8 @@ if(typeof AudioWorkletNode !== 'undefined' &&
 
       // exposes node as property, user may access to set port onMessage callback
       // or we can add a setOnMessage(cb) method on CsoundObj...
-      this.node = new CsoundNode(this.audioContext);
+      console.log(CSOUND_WASM_MODULE);
+      this.node = new CsoundNode(this.audioContext, {processorOptions: {module: CSOUND_WASM_MODULE }});
       this.node.connect(this.audioContext.destination);
     }
 
@@ -136,12 +138,14 @@ if(typeof AudioWorkletNode !== 'undefined' &&
     static importScripts(script_base='./') {
       let actx = CSOUND_AUDIO_CONTEXT;
       return new Promise( (resolve) => {
-        actx.audioWorklet.addModule(script_base + 'libcsound-worklet.base64.js').then(() => {
+        WebAssembly.compileStreaming(fetch(script_base + 'libcsound.wasm')).then(mod => {
+        CSOUND_WASM_MODULE = mod;
+        //actx.audioWorklet.addModule(script_base + 'libcsound-worklet.base64.js').then(() => {
         actx.audioWorklet.addModule(script_base + 'libcsound-worklet.js').then(() => {
         actx.audioWorklet.addModule(script_base + 'CsoundProcessor.js').then(() => {
           resolve(); 
-        }) }) })      
-      }) 
+        }) }) }) }) 
+    //})
     }
   }
 

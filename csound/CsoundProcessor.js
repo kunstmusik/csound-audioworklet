@@ -1,17 +1,37 @@
 'use strict';
 
-const WAM = AudioWorkletGlobalScope.WAM;
+const WAM = AudioWorkletGlobalScope.WAM || {};
 
 WAM["ENVIRONMENT"] = "WEB";
 WAM["print"] = (t) => console.log(t);
 WAM["printErr"] = (t) => console.log(t);
 
 
+
+// Get cwrap-ed functions
+let Csound = null; 
+//var _openAudioOut = WAM.cwrap('CsoundObj_openAudioOut', null, ['number']);
+//var _closeAudioOut = WAM.cwrap('CsoundObj_closeAudioOut', null, ['number']);
+//
+
+
+class CsoundProcessor extends AudioWorkletProcessor {
+
+  static get parameterDescriptors() {
+    return [];
+  }
+
+  constructor(options) {
+    super(options);
+
+    WAM['instantiateWasm'] = (info, receiveInstance) => {
+      return new WebAssembly.Instance(options.module, info);
+    };
+
 // INITIALIAZE WASM
 AudioWorkletGlobalScope.libcsound(WAM);
 
-// Get cwrap-ed functions
-const Csound = {
+csound = {
 
   new: WAM.cwrap('CsoundObj_new', ['number'], null),
   compileCSD: WAM.cwrap('CsoundObj_compileCSD', null, ['number', 'string']),
@@ -42,19 +62,7 @@ const Csound = {
   pause: WAM.cwrap('CsoundObj_pause', null, ['number']),
 
 }
-//var _openAudioOut = WAM.cwrap('CsoundObj_openAudioOut', null, ['number']);
-//var _closeAudioOut = WAM.cwrap('CsoundObj_closeAudioOut', null, ['number']);
-//
 
-
-class CsoundProcessor extends AudioWorkletProcessor {
-
-  static get parameterDescriptors() {
-    return [];
-  }
-
-  constructor(options) {
-    super(options);
 
     let csObj = Csound.new();
     this.csObj = csObj;
