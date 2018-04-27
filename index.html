@@ -40,8 +40,9 @@ schedule("Run", 3, 1)
 
 `;
 
-      csoundObj.setOption("-m0");
+      csoundObj.setOption("-m1");
       csoundObj.compileOrc(TEST_ORC);
+      csoundObj.setMessageCallback((msg) => document.body.innerText +=  msg + "\n");
       csoundObj.start();
 
 

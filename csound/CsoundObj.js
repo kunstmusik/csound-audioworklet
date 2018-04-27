@@ -51,7 +51,20 @@ if(typeof AudioWorkletNode !== 'undefined' &&
 
       super(context, 'Csound', options);
 
+      this.msgCallback = (msg) => { console.log("Default: " + msg); }
+
       this.port.start();
+      this.port.onmessage = (event) => {
+        let data = event.data;
+        switch(data[0]) {
+          case "log":
+            this.msgCallback(data[1]);
+            break;
+        default:
+          console.log('[CsoundNode] Invalid Message: "' + event.data);
+        }
+        
+      };
     }
 
   }
@@ -129,6 +142,10 @@ if(typeof AudioWorkletNode !== 'undefined' &&
     }
 
     stop() {
+    }
+
+    setMessageCallback(msgCallback) {
+      this.node.msgCallback = msgCallback;
     }
 
 
