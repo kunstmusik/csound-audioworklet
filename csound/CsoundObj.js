@@ -85,6 +85,10 @@ if(typeof AudioWorkletNode !== 'undefined' &&
       this.node.connect(this.audioContext.destination);
     }
 
+    writeToFS(filePath, blobData) {
+      this.node.port.postMessage(["writeToFS", filePath, blobData]);
+    }
+
     compileCSD(filePath) {
       // not sure what to do about file path...
       // need to see what can be accessed in

@@ -10,6 +10,12 @@ WAM["printErr"] = (t) => console.log(t);
 // INITIALIAZE WASM
 AudioWorkletGlobalScope.libcsound(WAM);
 
+// SETUP FS
+
+let FS = WAM["FS"];
+
+
+
 // Get cwrap-ed functions
 const Csound = {
 
@@ -177,6 +183,18 @@ class CsoundProcessor extends AudioWorkletProcessor {
         this.ksmps = null; 
         this.zerodBFS = null; 
         break;
+      case "writeToFS":
+        let name = data[1];
+        let buf = data[2];
+
+
+        FS.writeFile(name, buf);
+        //FS.mount(WORKERFS, { blobs: [{name: name, data: buf}]}, "/");
+        //let stream = FS.open(name, 'w+');
+        //FS.write(stream, buf, 0, buf.length, 0);
+        //FS.close(stream);
+
+        break
       default:
         console.log('[CsoundAudioProcessor] Invalid Message: "' + event.data);
     }

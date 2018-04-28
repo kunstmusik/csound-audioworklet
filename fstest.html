@@ -1,0 +1,34 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Csound AudioWorklet Test</title>
+  </head>
+
+  <body>
+
+  </body>
+
+  <script src='csound/CsoundObj.js'></script>
+
+  <script>
+
+    CsoundObj.importScripts("./csound/").then(() => {
+    fetch('test.csd').then((response) => {
+      response.blob().then((buf) => {
+
+      let csoundObj = new CsoundObj();
+        console.log(buf);
+      csoundObj.writeToFS('/test.csd', buf);
+
+      csoundObj.compileCSD('/test.csd');
+      csoundObj.setMessageCallback((msg) => document.body.innerText +=  msg + "\n");
+      csoundObj.start();
+      })
+
+    })
+
+
+    });
+
+  </script>
+</html>
