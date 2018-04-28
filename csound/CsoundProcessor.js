@@ -185,14 +185,11 @@ class CsoundProcessor extends AudioWorkletProcessor {
         break;
       case "writeToFS":
         let name = data[1];
-        let buf = data[2];
-
-
-        FS.writeFile(name, buf);
-        //FS.mount(WORKERFS, { blobs: [{name: name, data: buf}]}, "/");
-        //let stream = FS.open(name, 'w+');
-        //FS.write(stream, buf, 0, buf.length, 0);
-        //FS.close(stream);
+        let blobData = data[2];
+        let buf = new Uint8Array(blobData)
+        let stream = FS.open(name, 'w+');
+        FS.write(stream, buf, 0, buf.length, 0);
+        FS.close(stream);
 
         break
       default:

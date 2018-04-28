@@ -524,6 +524,15 @@ if(typeof AudioWorkletNode !== 'undefined' &&
       this.msgCallback = msgCallback;
     }
 
+    this.writeToFS = function (filePath, blobData) {
+
+      let FS = WAM["FS"];
+      let stream = FS.open(filePath, 'w+');
+      let buf = new Uint8Array(blobData)
+      FS.write(stream, buf, 0, buf.length, 0);
+      FS.close(stream);
+    }
+
     }
 
   CsoundObj.loadScript = function (src, callback) {

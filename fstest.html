@@ -14,14 +14,13 @@
 
     CsoundObj.importScripts("./csound/").then(() => {
     fetch('test.csd').then((response) => {
-      response.blob().then((buf) => {
+      response.arrayBuffer().then((buf) => {
 
       let csoundObj = new CsoundObj();
-        console.log(buf);
       csoundObj.writeToFS('/test.csd', buf);
 
-      csoundObj.compileCSD('/test.csd');
       csoundObj.setMessageCallback((msg) => document.body.innerText +=  msg + "\n");
+      csoundObj.compileCSD('/test.csd');
       csoundObj.start();
       })
 
