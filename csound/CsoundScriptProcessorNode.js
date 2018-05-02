@@ -122,6 +122,8 @@ class CsoundNodeFactory {
       ksmps: 32,
       running: false,
       started: false,
+      cnt: 0,
+      res: 0,
 
       writeToFS(filePath, blobData) {
         let FS = WAM["FS"];
@@ -227,21 +229,22 @@ class CsoundNodeFactory {
 
         let cnt = this.cnt;
         let nchnls = this.nchnls;
-        let status = this.status;
+        let res = this.res;
 
         for (let i = 0; i < bufferLen; i++, cnt++) {
-          if(cnt == ksmps && status == 0) {
+          if(cnt >= ksmps && res == 0) {
             // if we need more samples from Csound
-            status = CSOUND.performKsmps(this.csound);
+            res = CSOUND.performKsmps(this.csound);
             cnt = 0;
           }
+
           for (let channel = 0; channel < input.numberOfChannels; channel++) {
             let inputChannel = input.getChannelData(channel);
             csIn[cnt*nchnls + channel] = inputChannel[i] * zerodBFS;
           }
           for (let channel = 0; channel < output.numberOfChannels; channel++) {
             let outputChannel = output.getChannelData(channel);
-            if(status == 0)
+            if(res == 0)
               outputChannel[i] = csOut[cnt*nchnls + channel] / zerodBFS;
             else
               outputChannel[i] = 0;
@@ -249,7 +252,7 @@ class CsoundNodeFactory {
         }
 
         this.cnt = cnt;
-        this.status = status;
+        this.res = res;
       }
     }
 
