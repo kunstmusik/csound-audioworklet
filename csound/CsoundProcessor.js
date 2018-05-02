@@ -20,7 +20,7 @@ let FS = WAM["FS"];
 const Csound = {
 
   new: WAM.cwrap('CsoundObj_new', ['number'], null),
-  compileCSD: WAM.cwrap('CsoundObj_compileCSD', null, ['number', 'string']),
+  compileCSD: WAM.cwrap('CsoundObj_compileCSD', ['number'], ['number', 'string']),
   evaluateCode: WAM.cwrap('CsoundObj_evaluateCode', ['number'], ['number', 'string']),
   readScore: WAM.cwrap('CsoundObj_readScore', ['number'], ['number', 'string']),
 
@@ -61,9 +61,7 @@ class CsoundProcessor extends AudioWorkletProcessor {
 
   constructor(options) {
     super(options);
-
     let p = this.port;
-
     WAM["print"] = (t) => {
       p.postMessage(["log", t]);
     };
@@ -73,6 +71,11 @@ class CsoundProcessor extends AudioWorkletProcessor {
 
     let csObj = Csound.new();
     this.csObj = csObj;
+    // engine status
+    this.status = 0;
+    this.running = false;
+    this.started = false;
+
     Csound.setOption(this.csObj, "-odac");
     Csound.setOption(this.csObj, "-+rtaudio=null");
 
@@ -82,7 +85,8 @@ class CsoundProcessor extends AudioWorkletProcessor {
 
 
   process(inputs, outputs, parameters) {
-    if (this.csoundOutputBuffer == null) {
+    if (this.csoundOutputBuffer == null ||
+      this.running == false) {
       return true;
     }
 
@@ -92,53 +96,64 @@ class CsoundProcessor extends AudioWorkletProcessor {
     let bufferLen = output[0].length;
 
     let csOut = this.csoundOutputBuffer;
+    let csIn = this.csoundInputBuffer;
     let ksmps = this.ksmps;
     let zerodBFS = this.zerodBFS;
 
     let cnt = this.cnt;
     let nchnls = this.nchnls;
+    let status = this.status;
 
     for (let i = 0; i < bufferLen; i++, cnt++) {
-      if(cnt == ksmps) {
+      if(cnt == ksmps && status == 0) {
         // if we need more samples from Csound
-        Csound.performKsmps(this.csObj);
+        status = Csound.performKsmps(this.csObj);
         cnt = 0;
       }
 
-      // de-interleave 
+      for (let channel = 0; channel < input.length; channel++) {
+        let inputChannel = input[channel];
+        csIn[cnt*nchnls + channel] = inputChannel[i] * zerodBFS;
+      }
       for (let channel = 0; channel < output.length; channel++) {
         let outputChannel = output[channel];
-        outputChannel[i] = csOut[cnt*nchnls + channel] / zerodBFS;
+        if(status == 0)
+          outputChannel[i] = csOut[cnt*nchnls + channel] / zerodBFS;
+        else
+          outputChannel[i] = 0;
       } 
     }
 
     this.cnt = cnt;
+    this.status = status;
 
     return true;
   }
 
   start() {
-    let csObj = this.csObj;
-    let ksmps = Csound.getKsmps(csObj);
-    this.ksmps = ksmps;
-    this.cnt = ksmps;
-    let outputChannelCount = 2;
-    let inputChannelCount = 1;
+    if(this.started == false) {
+      let csObj = this.csObj;
+      let ksmps = Csound.getKsmps(csObj);
+      this.ksmps = ksmps;
+      this.cnt = ksmps;
+      let outputChannelCount = 2;
+      let inputChannelCount = 1;
 
-    //hardcode for now, but has to match Node's input/output settings
-    this.nchnls = 2;
-    this.nchnls_i = 1;
+      //hardcode for now, but has to match Node's input/output settings
+      this.nchnls = 2;
+      this.nchnls_i = 1;
 
-    Csound.prepareRT(csObj);
-    Csound.play(csObj);
+      Csound.prepareRT(csObj);
+      Csound.play(csObj);
 
-
-    let outputPointer = Csound.getOutputBuffer(csObj);
-    this.csoundOutputBuffer = new Float32Array(WAM.HEAP8.buffer, outputPointer, ksmps * outputChannelCount);
-    let inputPointer = Csound.getInputBuffer(csObj);
-    this.csoundInputBuffer = new Float32Array(WAM.HEAP8.buffer, inputPointer, ksmps * inputChannelCount);
-    this.zerodBFS = Csound.getZerodBFS(csObj);
-
+      let outputPointer = Csound.getOutputBuffer(csObj);
+      this.csoundOutputBuffer = new Float32Array(WAM.HEAP8.buffer, outputPointer, ksmps * outputChannelCount);
+      let inputPointer = Csound.getInputBuffer(csObj);
+      this.csoundInputBuffer = new Float32Array(WAM.HEAP8.buffer, inputPointer, ksmps * inputChannelCount);
+      this.zerodBFS = Csound.getZerodBFS(csObj);
+      this.started = true;
+    }
+    this.running = true;
   }
 
   compileOrc(orcString) {
@@ -150,7 +165,7 @@ class CsoundProcessor extends AudioWorkletProcessor {
 
     switch (data[0]) {
       case "compileCSD":
-        Csound.compileCSD(this.csObj, data[1]);
+        this.status = Csound.compileCSD(this.csObj, data[1]);
         break;
       case "compileOrc":
         Csound.compileOrc(this.csObj, data[1]);
@@ -170,6 +185,12 @@ class CsoundProcessor extends AudioWorkletProcessor {
           data[1], data[2]);
         break;
       case "start":
+        this.start();
+        break;
+      case "stop":
+        this.running = false;
+        break;
+      case "play":
         this.start();
         break;
       case "setOption":
@@ -192,7 +213,7 @@ class CsoundProcessor extends AudioWorkletProcessor {
         FS.close(stream);
 
         break
-      default:
+        default:
         console.log('[CsoundAudioProcessor] Invalid Message: "' + event.data);
     }
   }
