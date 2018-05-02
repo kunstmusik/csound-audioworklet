@@ -24,7 +24,7 @@ const TEST_CSD =
 <CsInstruments>
 
 sr = 48000
-ksmps = 32
+ksmps = 32 
 nchnls = 2
 nchnls_i = 1
 0dbfs = 1
@@ -35,7 +35,7 @@ instr 1
   ifreq = cpsmidi()   
   iamp = ampmidi(0dbfs * 0.5) 
   asig = vco2(iamp, ifreq)
-  asig += vco2(iamp * 0.25, ifreq * 2, 2, 0.1 + lfo:k(0.4, 5))
+  asig += vco2(iamp * 0.25, ifreq * 2, 2, 0.2)
   asig = zdf_ladder(asig, 400 + 16000 * mxadsr(0.1, 1, 0.25, 1), 6)
   asig *= linsegr:a(0, 0.01, 1, 1, 0) 
   outc(asig, asig) 
