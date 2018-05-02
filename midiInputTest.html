@@ -1,0 +1,79 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Csound MIDI</title>
+  </head>
+
+  <body>
+
+  </body>
+
+  <script src='csound/CsoundObj.js'></script>
+
+  <script>
+
+    CsoundObj.importScripts("./csound/").then(() => {
+      let csoundObj = new CsoundObj();
+
+const TEST_CSD = 
+`
+<CsoundSynthesizer>
+<CsOptions>
+-o dac -+rtmidi=null -+rtaudio=null -d -+msg_color=0 -M0 -m0
+</CsOptions>
+<CsInstruments>
+
+sr = 48000
+ksmps = 32
+nchnls = 2
+nchnls_i = 1
+0dbfs = 1
+
+massign(0, 1) ;assign all MIDI channels to instrument 1
+
+instr 1
+  ifreq = cpsmidi()   
+  iamp = ampmidi(0dbfs * 0.5) 
+  asig = vco2(iamp, ifreq)
+  asig += vco2(iamp * 0.25, ifreq * 2, 2, 0.1 + lfo:k(0.4, 5))
+  asig = zdf_ladder(asig, 400 + 16000 * mxadsr(0.1, 1, 0.25, 1), 6)
+  asig *= linsegr:a(0, 0.01, 1, 1, 0) 
+  outc(asig, asig) 
+endin
+
+</CsInstruments>
+<CsScore>
+e 3600
+</CsScore>
+</CsoundSynthesizer>
+
+`;
+
+      csoundObj.setOption("-m0");
+      csoundObj.compileCSD(TEST_CSD);
+      csoundObj.setMessageCallback((msg) => document.body.innerText +=  msg + "\n");
+      csoundObj.start();
+
+      if(navigator.requestMIDIAccess) {
+        navigator.requestMIDIAccess().then(
+          (m) => {
+            console.log(m);
+
+            let inputs = m.inputs;
+            for(dev of inputs.values()) {
+              //console.log(dev);
+              dev.onmidimessage = (evt) => {
+                let d = evt.data;
+                //console.log(evt);
+                csoundObj.midiMessage(d[0], d[1], d[2]);
+              }
+
+            } 
+          } , 
+          () => console.log("Fail MIDI."));
+      }
+
+    });
+
+  </script>
+</html>

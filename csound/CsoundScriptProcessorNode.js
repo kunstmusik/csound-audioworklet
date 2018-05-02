@@ -107,6 +107,7 @@ class CsoundNodeFactory {
     spn.outputCount = outputChannelCount;
 
     let cs = CSOUND.new();
+    CSOUND.setMidiCallbacks(cs);
     CSOUND.setOption(cs, "-odac");
     CSOUND.setOption(cs, "-+rtaudio=null");
 
@@ -212,9 +213,14 @@ class CsoundNodeFactory {
         this.msgCallBack = msgCallback;
       },
 
+      midiMessage(byte1, byte2, byte3) {
+        CSOUND.pushMidiMessage(this.csound, byte1, byte2, byte3);
+      },
+
       onaudioprocess(e) {
         if (this.csoundOutputBuffer == null ||
           this.running == false) {
+          return;
         }
 
         let input = e.inputBuffer;
