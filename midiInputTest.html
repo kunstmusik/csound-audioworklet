@@ -12,8 +12,11 @@
 
   <script>
 
+    var globalCs;
+
     CsoundObj.importScripts("./csound/").then(() => {
       let csoundObj = new CsoundObj();
+globalCs = csoundObj;
 
 const TEST_CSD = 
 `
@@ -50,28 +53,11 @@ e 3600
 `;
 
       csoundObj.setOption("-m0");
+      csoundObj.enableMidiInput();
       csoundObj.compileCSD(TEST_CSD);
       csoundObj.setMessageCallback((msg) => document.body.innerText +=  msg + "\n");
       csoundObj.start();
 
-      if(navigator.requestMIDIAccess) {
-        navigator.requestMIDIAccess().then(
-          (m) => {
-            console.log(m);
-
-            let inputs = m.inputs;
-            for(dev of inputs.values()) {
-              //console.log(dev);
-              dev.onmidimessage = (evt) => {
-                let d = evt.data;
-                //console.log(evt);
-                csoundObj.midiMessage(d[0], d[1], d[2]);
-              }
-
-            } 
-          } , 
-          () => console.log("Fail MIDI."));
-      }
 
     });
 
